@@ -8,25 +8,24 @@ from django.contrib.auth import authenticate
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from usercollection.models import UserCollection
-from usercollection.api.serializers import UserCollectionSerializer
-
+from comment.models import Comments
+from comment.api.serializers import CommentsSerializer
 # Create your views here.
-# User Collection     
+# Comments       
 # ------------------------------------------------
-class UserCollectionView(APIView):
+class CommentsView(APIView):
     
-    model = UserCollection
+    model = Comments
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
     def get(self, request):
-        user_collection_list = UserCollection.objects.all()
-        serialzer = UserCollectionSerializer(user_collection_list, many=True)
+        comments_list = Comments.objects.all()
+        serialzer = CommentsSerializer(comments_list, many=True)
         return Response(serialzer.data)
 
     def post(self, request):
-        serialzer = UserCollectionSerializer(data=request.data)
+        serialzer = CommentsSerializer(data=request.data)
         if serialzer.is_valid():
             serialzer.save()
             return JsonResponse(serialzer.data, status = status.HTTP_201_CREATED)

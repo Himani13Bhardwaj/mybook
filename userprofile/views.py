@@ -8,25 +8,25 @@ from django.contrib.auth import authenticate
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from usercollection.models import UserCollection
-from usercollection.api.serializers import UserCollectionSerializer
+from userprofile.models import UserProfile
+from userprofile.api.serializers import UserProfileSerializer
 
 # Create your views here.
-# User Collection     
+# User Profile    
 # ------------------------------------------------
-class UserCollectionView(APIView):
-    
-    model = UserCollection
+class UserProfileView(APIView):
+
+    model = UserProfile
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
     def get(self, request):
-        user_collection_list = UserCollection.objects.all()
-        serialzer = UserCollectionSerializer(user_collection_list, many=True)
+        user_activity_list = UserProfile.objects.all()
+        serialzer = UserProfileSerializer(user_activity_list, many=True)
         return Response(serialzer.data)
 
     def post(self, request):
-        serialzer = UserCollectionSerializer(data=request.data)
+        serialzer = UserProfileSerializer(data=request.data)
         if serialzer.is_valid():
             serialzer.save()
             return JsonResponse(serialzer.data, status = status.HTTP_201_CREATED)

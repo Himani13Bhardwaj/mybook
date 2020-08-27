@@ -23,4 +23,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 	# REST-framework
     path('api/account/', include('account.urls', 'account_api')),
+    path('api/genres/', include('genre.urls', 'genre_api')),
+    path('api/authors/', include('author.urls', 'author_api')),
+    path('api/book/', include('book.urls', 'book_api')),
+    path('api/comments/', include('comment.urls', 'comment_api')),
+    path('api/userCollection/', include('usercollection.urls', 'usercollection_api')),
+    path('api/userActivity/', include('useractivity.urls', 'useractivity_api')),
+    path('api/userProfile/', include('userprofile.urls', 'userprofile_api')),
 ]
