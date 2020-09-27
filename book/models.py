@@ -22,7 +22,6 @@ class BookDetails(models.Model):
 
     
 class Books(models.Model):
-    
     book_name               = models.CharField(max_length=254)
     book_cover_url          = models.ImageField(blank=False, null=False)
     chapters                = models.IntegerField
@@ -32,7 +31,8 @@ class Books(models.Model):
     ranking                 = models.CharField(max_length=100)
     book_brief_info         = models.CharField(max_length=100)
     genre                   = models.ForeignKey(Genre, on_delete=models.CASCADE, default=1)
-    author                  = models.ForeignKey(Author, on_delete=models.CASCADE, default=1)
+    # author                  = models.ForeignKey(Author, on_delete=models.CASCADE, default=1)
+    author                  = models.ForeignKey(Author, related_name='books' ,on_delete=models.CASCADE, default=1)
     book_details            = models.ForeignKey(BookDetails, on_delete=models.CASCADE, default=1)
 
     def __str__(self):
