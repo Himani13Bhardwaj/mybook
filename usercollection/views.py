@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, serializers
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from django.contrib.auth import authenticate
@@ -42,7 +42,10 @@ class UserCollectionView(APIView):
         except UserCollection.DoesNotExist:
             booksid = []
         books = Books.objects.filter(id__in=booksid)
-        apibookserializer = BooksSerializer
+        class apibookserializer(BooksSerializer):
+            author = serializers.CharField(source='author.author_name')
+            genre = serializers.CharField(source='genre.genre_name')
+        apibookserializer
         apibookserializer.Meta.fields.extend(['author', 'genre', 'ranking'])
         data = apibookserializer(books, many=True).data
         return Response(data)
