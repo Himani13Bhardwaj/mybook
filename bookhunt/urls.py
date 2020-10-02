@@ -31,3 +31,6 @@ urlpatterns = [
     path('api/userActivity/', include('useractivity.urls', 'useractivity_api')),
     path('api/userProfile/', include('userprofile.urls', 'userprofile_api')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

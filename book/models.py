@@ -13,22 +13,22 @@ class State(ChoiceEnum):
 
 class BookDetails(models.Model):
     
-    view                    = models.CharField(max_length=100)
-    upvote                  = models.CharField(max_length=100)
-    downvote                = models.CharField(max_length=100)
+    view                    = models.IntegerField(default=0)
+    upvote                  = models.IntegerField(default=0)
+    downvote                = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.view
+        return str(self.view)
 
     
 class Books(models.Model):
     book_name               = models.CharField(max_length=254)
-    book_cover_url          = models.ImageField(blank=False, null=False)
+    book_cover_url          = models.ImageField(upload_to = 'static', default = 'image/books/young-user-icon.png')
     chapters                = models.IntegerField
-    view                    = models.CharField(max_length=100)
+    view                    = models.IntegerField(default=0)
     published_time          = models.DateField(auto_now=True)
-    user_count              = models.CharField(max_length=100)
-    ranking                 = models.CharField(max_length=100)
+    user_count              = models.IntegerField(default=0)
+    ranking                 = models.IntegerField(default=0)
     book_brief_info         = models.CharField(max_length=100)
     genre                   = models.ForeignKey(Genre, on_delete=models.CASCADE, default=1)
     # author                  = models.ForeignKey(Author, on_delete=models.CASCADE, default=1)
@@ -42,7 +42,7 @@ class Chapter(models.Model):
 
     chapter_no              = models.PositiveIntegerField(null=True, blank=True)
     chapter_name            = models.CharField(max_length=100)
-    chapter_url             = models.FileField(blank=False, null=False)
+    chapter_url             = models.FileField(upload_to = 'static/book', default = '')
     state                   = EnumChoiceField(enum_class=State , default=State.free)
     book_id                 = models.ForeignKey(Books, on_delete=models.CASCADE, default=1)
 
