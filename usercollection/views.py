@@ -45,7 +45,6 @@ class UserCollectionView(APIView):
         class apibookserializer(BooksSerializer):
             author = serializers.CharField(source='author.author_name')
             genre = serializers.CharField(source='genre.genre_name')
-        apibookserializer
         apibookserializer.Meta.fields.extend(['author', 'genre', 'ranking'])
         data = apibookserializer(books, many=True).data
         return Response(data)

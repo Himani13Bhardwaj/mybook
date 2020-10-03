@@ -154,8 +154,10 @@ def upvote(request):
     '''
     bookname = request.data.get('bookname')
     bookid = request.data.get('bookid')
-    book = Books.objects.select_related('book_details').get(id=bookid, book_name=bookname)
-    print(book)
+    try:
+        book = Books.objects.select_related('book_details').get(id=bookid, book_name=bookname)
+    except Books.DoesNotExist:
+        return Response('no book exists')
     bookdetail = BookDetails.objects.get(id=book.book_details.id)
     upvote_count = int(bookdetail.upvote) + 1
     bookdetail.upvote = upvote_count
@@ -181,8 +183,10 @@ def downvote(request):
     '''
     bookname = request.data.get('bookname')
     bookid = request.data.get('bookid')
-    book = Books.objects.select_related('book_details').get(id=bookid, book_name=bookname)
-    print(book)
+    try:
+        book = Books.objects.select_related('book_details').get(id=bookid, book_name=bookname)
+    except Books.DoesNotExist:
+        return Response('no book exists')
     bookdetail = BookDetails.objects.get(id=book.book_details.id)
     downvote_count = int(bookdetail.downvote) + 1
     bookdetail.downvote = downvote_count
@@ -208,7 +212,10 @@ def comment(request):
     bookname = request.data.get('bookname')
     bookid = request.data.get('bookid')
     comment = request.data.get('comment')
-    book = Books.objects.get(book_name=bookname, id=bookid)
+    try:
+        book = Books.objects.get(book_name=bookname, id=bookid)
+    except Books.DoesNotExist:
+        return Response('no book exists')
     Comments.objects.create(book_id=book, user_id=request.user, comment=comment)
     class BookSerializer(BooksSerializer):
             upvote = serializers.CharField(source='book_details.upvote')
