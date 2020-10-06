@@ -115,8 +115,8 @@ class ObtainAuthTokenView(APIView):
 	def post(self, request):
 		context = {}
 
-		email = request.POST.get('username')
-		password = request.POST.get('password')
+		email = request.data.get('username', '0')
+		password = request.data.get('password', '0')
 		account = authenticate(email=email, password=password)
 		if account:
 			try:
