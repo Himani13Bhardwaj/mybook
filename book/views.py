@@ -1,3 +1,4 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 from rest_framework.filters import (
     SearchFilter,
@@ -24,6 +25,7 @@ from book.api.serializers import *
 from tools.pagination import StandardResultsSetPagination
 from account.models import Account
 from comment.models import Comments
+from usercollection.models import UserCollection
 # Create your views here.
 # Books Detials
 # -----------------------------------------------
@@ -52,10 +54,17 @@ class BookDetailsView(RetrieveAPIView):
 class BooksView(APIView):
 
     pagination_class = StandardResultsSetPagination
-    
+    filterset_fields = ['genre']
+    filter_backends = [DjangoFilterBackend]
+
     def get(self, request):
 
-        paginator = Paginator(Books.objects.all(), 20)
+        def filter_queryset(queryset):
+            for backend in list(self.filter_backends):
+                queryset = backend().filter_queryset(self.request, queryset, self)
+            return queryset
+
+        paginator = Paginator(filter_queryset(Books.objects.filter()), 20)
         page = request.query_params.get('page')
         try:
             books = paginator.page(page)
@@ -94,54 +103,39 @@ class BookReadView(APIView):
     model = Chapter
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
-    # Type: POST request
-    # Parameter= bookname, bookid, chapter, userid
-    # Header = appid, cookieid
-    # Algorithm:
-    # If userid is there: // apply authentication class
-    #     If check bookname and book id are valid
-    #         If chapter is available and chapter is free
-    #             add this activity in useractiving
-    #             Return chapter of the book
-    #         Else:
-    #             If check available coins with respective to user if == 20:
-    #                   Update the user accound with -20
-    #                    Set the state of the chapter with respect to book = unlock by entering this activity in useractiving
-    #                    do entry in useractivity
-    #                 Return chapter of the book
-    #             Else:
-    #                 Return kindly must collect the coins of the books
-    #     Else:
-    #         “kindly connect with the right book”
-    # Else:
-    #     “kindly login first”
 
     def post(self, request):
         print(request.data)
         userid = request.data.get('userid')
         bookid = request.data.get('bookid')
         bookname = request.data.get('bookname')
-        # chapter_no = request.data.get('chapter')
+        chapter_no = request.data.get('chapter')
 
         user = Account.objects.get(pk = userid)
         if user is not None:
             book = Books.objects.get(id=bookid)
             if book.book_name == bookname:
-                chapter = Chapter.objects.get(book_id, chapter_no)
+                try:
+                    chapter = Chapter.objects.get(book_id=bookid, chapter_no=chapter_no)
+                except Chapter.DoesNotExist:
+                    return Response({'message': 'chapter doesnt exist'})
                 if chapter.state == 'Free':
                     # update the user activity
-                    return Response(chapter)
+                    try:
+                        user_act = UserActivity.objects.get(user_id=request.user, book_id_id=bookid)
+                        user_act.unlocked_chapter = True
+                        user_act.save()
+                    except UserActivity.DoesNotExist:
+                        UserActivity.objects.create(user_id=request.user, book_id_id=bookid, unlocked_chapter=True)                    
+                elif int(chapter_no)==1:
+                    UserCollection.objects.get_or_create(user=request.user, book_id=book)
                 else:
-                    return Response('')
-    #                If check available coins with respective to user if == 20:
-    #                   Update the user accound with -20
-    #                    Set the state of the chapter with respect to book = unlock
-    #                    do entry in useractivity
-    #                   Return chapter of the book
-    #                 Else:
-    #                    Return kindly must collect the coins of the books
-            return  Response("kindly check the right book")
-        return Response("Kindly register yourself first")
+                    return Response({'message': 'book is locked kindly purchase the book coins'})
+            else:
+                return Response({'message': 'select the appropriate book'})
+        else:
+            return Response({'message': 'Please login first'})
+        return Response()
 
 
 @api_view(['POST'])

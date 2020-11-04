@@ -12,4 +12,4 @@ class UserActivity(models.Model):
     unlocked_chapter        = models.BooleanField
 
     def __str__(self):
-        return self.book_id
+        return str(self.date)
