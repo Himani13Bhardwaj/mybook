@@ -69,9 +69,9 @@ class BooksView(APIView):
         try:
             books = paginator.page(page)
         except PageNotAnInteger:
-            books = paginator.page(1)
+            books = []
         except EmptyPage:
-            books = paginator.page(paginator.num_pages)
+            books = []
         BooksSerializer.Meta.fields = ['id', 'book_name', 'book_cover_url']
         data = BooksSerializer(books, many=True).data
         return Response(data)
