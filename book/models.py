@@ -23,7 +23,7 @@ class BookDetails(models.Model):
     
 class Books(models.Model):
     book_name               = models.CharField(max_length=254)
-    book_cover_url          = models.ImageField(upload_to = 'static', default = 'image/books/young-user-icon.png')
+    book_cover_url          = models.ImageField(upload_to = 'static/books', default = '')
     chapters                = models.IntegerField
     view                    = models.IntegerField(default=0)
     published_time          = models.DateField(auto_now=True)

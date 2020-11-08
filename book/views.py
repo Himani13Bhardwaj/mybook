@@ -234,3 +234,17 @@ def search(request):
         data = BooksSerializer(Books.objects.filter(author__id__in = authors), many=True).data
         print(authors)
     return Response(data)
+
+
+class LatestView(APIView):
+    def get(self, request):
+        data = dict()
+        try:
+            data['latest'] = BooksSerializer(Books.objects.order_by('published_time')[:5], many=True).data
+            try:
+                data['deals'] = BooksSerializer(Books.objects.order_by('ranking')[:5], many=True).data
+            except Exception:
+                data['deals'] = []
+        except Exception:
+            data['latest'] = []
+        return Response(data)
