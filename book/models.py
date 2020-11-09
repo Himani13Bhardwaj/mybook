@@ -2,7 +2,7 @@ from django.db import models
 from enumchoicefield import ChoiceEnum, EnumChoiceField
 from author.models import Author
 from genre.models import Genre
-
+from languages.fields import LanguageField
 # Create your models here.
 
 class State(ChoiceEnum):
@@ -34,6 +34,7 @@ class Books(models.Model):
     # author                  = models.ForeignKey(Author, on_delete=models.CASCADE, default=1)
     author                  = models.ForeignKey(Author, related_name='books' ,on_delete=models.CASCADE, default=1)
     book_details            = models.ForeignKey(BookDetails, on_delete=models.CASCADE, default=1)
+    language                = LanguageField(default='en', max_length=100)
 
     def __str__(self):
         return self.book_name
@@ -42,7 +43,7 @@ class Chapter(models.Model):
 
     chapter_no              = models.PositiveIntegerField(null=True, blank=True)
     chapter_name            = models.CharField(max_length=100)
-    chapter_url             = models.FileField(upload_to = 'static/book', default = '')
+    chapter_url             = models.FileField(upload_to = 'static/chapters', default = '')
     state                   = EnumChoiceField(enum_class=State , default=State.free)
     book_id                 = models.ForeignKey(Books, on_delete=models.CASCADE, default=1)
 

@@ -12,5 +12,6 @@ urlpatterns = [
     path('upvote/', upvote),
     path('downvote/', downvote),
     path('comment/', comment),
-    path('search/', search)
+    path('search/', search),
+    path('latest/', LatestView.as_view()),
 ]
