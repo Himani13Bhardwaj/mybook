@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from django.contrib.auth import authenticate
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-
+from account.models import Account
 from userprofile.models import UserProfile
 from userprofile.api.serializers import UserProfileSerializer
 
@@ -31,3 +31,29 @@ class UserProfileView(APIView):
             serialzer.save()
             return JsonResponse(serialzer.data, status = status.HTTP_201_CREATED)
         return JsonResponse(serialzer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AddCoinsView(APIView):
+    
+    model = UserProfile
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    def get(self, request):
+        user_activity_list = UserProfile.objects.all()
+        serialzer = UserProfileSerializer(user_activity_list, many=True)
+        return Response(serialzer.data)
+
+    def post(self, request):
+        userid = request.data.get('userid')
+        coin = request.data.get('coins')
+
+        user = Account.objects.get(pk = userid)
+        if user is not None:
+            userprofile = UserProfile.objects.get(user_id = user)
+            if userprofile is not None:
+                userprofile.coins = int(userprofile.coins) + int(coin)
+                userprofile.save()
+                return JsonResponse('added the coins')
+            return JsonResponse('Kindly create the profile with coins')
+        return JsonResponse('No Such user exist. Kindly login first.')

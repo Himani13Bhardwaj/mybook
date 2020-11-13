@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from account.api.serializers import RegistrationSerializer, AccountPropertiesSerializer, ChangePasswordSerializer
 from account.models import Account
 from rest_framework.authtoken.models import Token
-
+from userprofile.models import UserProfile
 # Register
 @api_view(['POST', ])
 @permission_classes([])
@@ -42,6 +42,7 @@ def registration_view(request):
 			data['pk'] = account.pk
 			token = Token.objects.get(user=account).key
 			data['token'] = token
+			UserProfile.objects.create(user_id=account)
 		else:
 			data = serializer.errors
 		return Response(data)
