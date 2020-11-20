@@ -9,6 +9,7 @@ class UserActivity(models.Model):
     book_id                 = models.ForeignKey(Books, on_delete=models.CASCADE, default=1)
     logged_in_time          = models.TimeField(auto_now=True)
     date                    = models.DateField(auto_now=True)
+    chapter                 = models.PositiveIntegerField(null=True, blank=True, default=1)
     unlocked_chapter        = models.BooleanField
 
     def __str__(self):
