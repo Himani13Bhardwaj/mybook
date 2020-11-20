@@ -26,6 +26,7 @@ from tools.pagination import StandardResultsSetPagination
 from account.models import Account
 from comment.models import Comments
 from usercollection.models import UserCollection
+from useractivity.models import UserActivity
 # Create your views here.
 # Books Detials
 # -----------------------------------------------
@@ -103,39 +104,76 @@ class BookReadView(APIView):
     model = Chapter
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
+    
+    def searchUser(self, _id):
+        user = Account.objects.get(pk = _id)
+        if user is not None:
+            return True
+        return False
 
+    def searchBook(self, _id, _name):
+        try:
+            book = Books.objects.get(id=_id)
+            if book.book_name == _name:
+                return True
+            return False
+        except Books.DoesNotExist:
+            return False
+
+    def searchBookChapter(self, _book_id, _chapter):
+        try:
+            _chapter = Chapter.objects.get(book_id=_book_id, chapter_no=_chapter)
+            return _chapter
+        except Chapter.DoesNotExist:
+            return None
+
+    def searchBookInUserActivity(self, _id, _book_id, _chapter):
+        try:
+            useractivity = UserActivity.objects.get(user_id=_id, book_id_id=_book_id, chapter= _chapter)
+            return useractivity
+        except UserActivity.DoesNotExist:
+            return None
+    
+    def searchBookInUserCollection(self, _id, _book_id):
+        try:
+            _collection = UserCollection.objects.get(user_id=_id, book_id_id=_book_id)
+            return True
+        except UserCollection.DoesNotExist:
+            return False
+        
     def post(self, request):
-        print(request.data)
         userid = request.data.get('userid')
         bookid = request.data.get('bookid')
         bookname = request.data.get('bookname')
         chapter_no = request.data.get('chapter')
 
         user = Account.objects.get(pk = userid)
-        if user is not None:
-            book = Books.objects.get(id=bookid)
-            if book.book_name == bookname:
-                try:
-                    chapter = Chapter.objects.get(book_id=bookid, chapter_no=chapter_no)
-                except Chapter.DoesNotExist:
-                    return Response({'message': 'chapter doesnt exist'})
-                if chapter.state == 'Free':
-                    # update the user activity
-                    try:
-                        user_act = UserActivity.objects.get(user_id=request.user, book_id_id=bookid)
-                        user_act.unlocked_chapter = True
-                        user_act.save()
-                    except UserActivity.DoesNotExist:
-                        UserActivity.objects.create(user_id=request.user, book_id_id=bookid, unlocked_chapter=True)                    
-                elif int(chapter_no)==1:
-                    UserCollection.objects.get_or_create(user=request.user, book_id=book)
+        if BookReadView.searchUser(self, userid):
+            if BookReadView.searchBook(self, bookid, bookname):
+                _chapter = BookReadView.searchBookChapter(self, bookid, chapter_no)
+                if _chapter is not None:
+                    if not BookReadView.searchBookInUserCollection(self, request.user, bookid):
+                        book = Books.objects.get(id=bookid)
+                        UserCollection.objects.get_or_create(user=request.user, book_id=book)
+                    chapter = ChapterSerializer(_chapter).data
+                    if BookReadView.searchBookInUserActivity(self, request.user, bookid, chapter_no) is not None:
+                        return Response(chapter)             
+                    if chapter['state'] == 'free':
+                        try:
+                            user_act = UserActivity.objects.create(user_id=request.user, book_id_id=bookid)
+                            user_act.unlocked_chapter = True
+                            user_act.chapter = chapter_no
+                            user_act.save()
+                            return Response(chapter)  
+                        except Exception:
+                            return Response({'message': 'Server Issue.'})                                 
+                    return Response({'message': 'To Unlock the new chapter, You have to earn coins.'})
                 else:
-                    return Response({'message': 'book is locked kindly purchase the book coins'})
+                    return Response({'message': 'chapter doesnt exist'})
             else:
-                return Response({'message': 'select the appropriate book'})
+               return Response({'message': 'select the appropriate book'})
         else:
             return Response({'message': 'Please login first'})
-        return Response()
 
 
 @api_view(['POST'])
