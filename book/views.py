@@ -90,7 +90,7 @@ class BookInfoView(APIView):
             downvote = serializers.CharField(source='book_details.downvote')
             comments = serializers.StringRelatedField(many=True)
             author = serializers.CharField(source='author.author_name')
-        BookSerializer.Meta.fields = ['id', 'book_name', 'book_cover_url', 'view', 'upvote', 'downvote', 'book_brief_info', 'genre', 'author', 'ranking', 'comments']
+        BookSerializer.Meta.fields = ['id', 'chapters', 'book_name', 'book_cover_url', 'view', 'upvote', 'downvote', 'book_brief_info', 'genre', 'author', 'ranking', 'comments']
         data = BookSerializer(books, many=True).data
         return Response(data)
 
