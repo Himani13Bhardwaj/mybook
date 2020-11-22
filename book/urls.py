@@ -14,4 +14,5 @@ urlpatterns = [
     path('comment/', comment),
     path('search/', search),
     path('latest/', LatestView.as_view()),
+    path('unlockbookchapter/', UnLockBookChapterView.as_view()),
 ]
