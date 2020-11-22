@@ -44,16 +44,14 @@ class AddCoinsView(APIView):
         serialzer = UserProfileSerializer(user_activity_list, many=True)
         return Response(serialzer.data)
 
-    def post(self, request):
-        userid = request.data.get('userid')
+    def patch(self, request):
         coin = request.data.get('coins')
 
-        user = Account.objects.get(pk = userid)
-        if user is not None:
-            userprofile = UserProfile.objects.get(user_id = user)
+        if request.user is not None:
+            userprofile = UserProfile.objects.get(user_id = request.user)
             if userprofile is not None:
-                userprofile.coins = int(userprofile.coins) + int(coin)
+                userprofile.coins =  int(userprofile.coins) + int(coin)
                 userprofile.save()
-                return JsonResponse('added the coins')
-            return JsonResponse('Kindly create the profile with coins')
-        return JsonResponse('No Such user exist. Kindly login first.')
+                return Response({'message':'added the coins', 'login': True, 'valid': True})
+            return Response({'message':'Kindly create the profile with coins', 'login': False})
+        return Response({'message':'No Such user exist. Kindly login first.', 'login': False})
