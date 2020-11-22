@@ -21,7 +21,7 @@ class UserProfileView(APIView):
     authentication_classes = (TokenAuthentication,)
 
     def get(self, request):
-        user_activity_list = UserProfile.objects.all()
+        user_activity_list = UserProfile.objects.filter(id=request.user.id)
         serialzer = UserProfileSerializer(user_activity_list, many=True)
         return Response(serialzer.data)
 
