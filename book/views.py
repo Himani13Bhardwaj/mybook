@@ -27,6 +27,8 @@ from account.models import Account
 from comment.models import Comments
 from usercollection.models import UserCollection
 from useractivity.models import UserActivity
+from userprofile.models import UserProfile
+from userprofile.api.serializers import UserProfileSerializer
 # Create your views here.
 # Books Detials
 # -----------------------------------------------
@@ -104,12 +106,6 @@ class BookReadView(APIView):
     model = Chapter
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
-    
-    def searchUser(self, _id):
-        user = Account.objects.get(pk = _id)
-        if user is not None:
-            return True
-        return False
 
     def searchBook(self, _id, _name):
         try:
@@ -142,13 +138,11 @@ class BookReadView(APIView):
             return False
         
     def post(self, request):
-        userid = request.data.get('userid')
         bookid = request.data.get('bookid')
         bookname = request.data.get('bookname')
         chapter_no = request.data.get('chapter')
 
-        user = Account.objects.get(pk = userid)
-        if BookReadView.searchUser(self, userid):
+        if request.user is not None:
             if BookReadView.searchBook(self, bookid, bookname):
                 _chapter = BookReadView.searchBookChapter(self, bookid, chapter_no)
                 if _chapter is not None:
@@ -157,23 +151,22 @@ class BookReadView(APIView):
                         UserCollection.objects.get_or_create(user=request.user, book_id=book)
                     chapter = ChapterSerializer(_chapter).data
                     if BookReadView.searchBookInUserActivity(self, request.user, bookid, chapter_no) is not None:
-                        return Response(chapter)             
+                        return Response({'message': 'Successfully Opened.','login': True, 'unlock': True,'chapter':chapter })
                     if chapter['state'] == 'free':
-                        try:
-                            user_act = UserActivity.objects.create(user_id=request.user, book_id_id=bookid)
+                        user_act_obj, user_act_created  = UserActivity.objects.get_or_create(user_id=request.user, book_id_id=bookid, chapter = chapter_no)
+                        if user_act_created:
+                            user_act = UserActivity.objects.get(user_id=request.user, book_id_id=bookid, chapter=chapter_no)
                             user_act.unlocked_chapter = True
-                            user_act.chapter = chapter_no
                             user_act.save()
-                            return Response(chapter)  
-                        except Exception:
-                            return Response({'message': 'Server Issue.'})                                 
-                    return Response({'message': 'To Unlock the new chapter, You have to earn coins.'})
+                            return Response({'message': 'Successfully Opened.','login': True, 'unlock': True,'chapter':chapter })  
+                        return Response({'message': 'Server Issue.','login': True, 'unlock': False})                                 
+                    return Response({'message': 'To Unlock the new chapter, You have to earn coins.','login': True, 'unlock': False})
                 else:
-                    return Response({'message': 'chapter doesnt exist'})
+                    return Response({'message': 'chapter doesnt exist','login': True, 'unlock': False})
             else:
-               return Response({'message': 'select the appropriate book'})
+               return Response({'message': 'select the appropriate book','login': True, 'unlock': False})
         else:
-            return Response({'message': 'Please login first'})
+            return Response({'message': 'Please login first','login': False})
 
 
 @api_view(['POST'])
@@ -273,7 +266,7 @@ def search(request):
         print(authors)
     return Response(data)
 
-
+# get the latest books deal
 class LatestView(APIView):
     def get(self, request):
         data = dict()
@@ -286,3 +279,62 @@ class LatestView(APIView):
         except Exception:
             data['latest'] = []
         return Response(data)
+  
+# unlock the locked chapter
+class UnLockBookChapterView(APIView):
+    
+    model = Chapter
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    def searchBook(self, _id, _name):
+        try:
+            book = Books.objects.get(id=_id)
+            if book.book_name == _name:
+                return True
+            return False
+        except Books.DoesNotExist:
+            return False
+
+    def searchBookInUserActivity(self, _id, _book_id, _chapter):
+        try:
+            useractivity = UserActivity.objects.get(user_id=_id, book_id_id=_book_id, chapter= _chapter)
+            return useractivity
+        except UserActivity.DoesNotExist:
+            return None
+
+    def post(self, request):
+        coins = request.data.get('coins')
+        bookid = request.data.get('bookid')
+        bookname = request.data.get('bookname')
+        chapter_no = request.data.get('chapter')
+
+        if request.user is not None:
+            # coincheck if the coins exist in his userprofile and check user too
+            try:
+                userprofile = UserProfile.objects.get(user_id = request.user)
+                if userprofile is not None:
+                    print(userprofile)
+                    if UnLockBookChapterView.searchBook(self, bookid, bookname):
+                        #save the updated coins
+                        # add this in UserActivity
+                        if UnLockBookChapterView.searchBookInUserActivity(self, request.user, bookid, chapter_no) is not None:
+                            return Response({'message': 'Chapter is already unlocked', 'login': True, 'unlock': True})  
+                
+                        if userprofile.coins >= int(coins):
+                            user_act_obj, user_act_created = UserActivity.objects.get_or_create(user_id=request.user, book_id_id=bookid, chapter=chapter_no)
+                            if user_act_created:
+                                user_act = UserActivity.objects.get(user_id=request.user, book_id_id=bookid, chapter=chapter_no)
+                                user_act.unlocked_chapter = True
+                                user_act.chapter = chapter_no
+                                user_act.save()
+                                userprofile.coins = userprofile.coins - int(coins)
+                                userprofile.save()              
+                                return Response({'message': 'Successfully unlock the chapter', 'login': True, 'unlock': True})
+                            return Response({'message': 'Chapter is already unlocked', 'login': True, 'unlock': True})
+                        return Response({'message': 'You dont have enough coins. Earned them or Buy coins', 'login': True, 'unlock': False})
+                    return Response({'message': 'Select appropriate book', 'login': True, 'unlock': False})
+                return Response({'message':'Kindly create the profile with coins', 'login': False, 'unlock': False})
+            except UserProfile.DoesNotExist:
+                return Response({'message':'No Such user exist. Kindly login first. Or Server issue','login': False, 'unlock': False})
+        return Response({'message': 'No Such user exist. Kindly login first.', 'login': False, 'unlock': False})
