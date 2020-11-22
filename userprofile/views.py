@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from account.models import Account
 from userprofile.models import UserProfile
 from userprofile.api.serializers import UserProfileSerializer
+from account.api.serializers import AccountPropertiesSerializer
 
 # Create your views here.
 # User Profile    
@@ -22,8 +23,14 @@ class UserProfileView(APIView):
 
     def get(self, request):
         user_activity_list = UserProfile.objects.filter(id=request.user.id)
+        data = {}
+        print(request.user, type(request.user))
         serialzer = UserProfileSerializer(user_activity_list, many=True)
-        return Response(serialzer.data)
+        data['userprofile'] = serialzer.data
+        data['user'] = AccountPropertiesSerializer(
+            request.user
+            ).data
+        return Response(data)
 
     def post(self, request):
         serialzer = UserProfileSerializer(data=request.data)
