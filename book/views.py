@@ -76,7 +76,7 @@ class BooksView(APIView):
         except EmptyPage:
             books = []
         BooksSerializer.Meta.fields = ['id', 'book_name', 'book_cover_url']
-        data = BooksSerializer(books, many=True).data
+        data = BooksSerializer(books, many=True, context={"request": request}).data
         return Response(data)
 
 
@@ -91,7 +91,7 @@ class BookInfoView(APIView):
             comments = serializers.StringRelatedField(many=True)
             author = serializers.CharField(source='author.author_name')
         BookSerializer.Meta.fields = ['id', 'chapters', 'book_name', 'book_cover_url', 'view', 'upvote', 'downvote', 'book_brief_info', 'genre', 'author', 'ranking', 'comments']
-        data = BookSerializer(books, many=True).data
+        data = BookSerializer(books, many=True, context={"request": request}).data
         return Response(data)
 
 # class BooksSearchView(ListAPIView):

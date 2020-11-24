@@ -14,7 +14,9 @@ class AuthorProfileSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class AuthorSerializer(serializers.ModelSerializer):
+
     books = BooksSerializer(many=True, read_only=True)
+
     class Meta:
         model = Author
         fields = ['id', 'author_name', 'hobbies', 'profilepicture', 'books']

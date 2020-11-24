@@ -33,9 +33,9 @@ class AuthorProfileView(APIView):
     #         return JsonResponse(serialzer.data, status = status.HTTP_201_CREATED)
     #     return JsonResponse(serialzer.errors, status=status.HTTP_400_BAD_REQUEST)
     def get(self, request):
-        data = AuthorSerializer(Author.objects.all(), many=True).data
+        data = AuthorSerializer(Author.objects.all(), context={"request": request}, many=True).data
         return Response(data)
 
     def post(self, request):
-        data = AuthorSerializer(Author.objects.get(id=request.data.get('author'))).data
+        data = AuthorSerializer(Author.objects.get(id=request.data.get('author')), context={"request": request}).data
         return Response(data)

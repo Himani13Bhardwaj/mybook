@@ -11,5 +11,5 @@ class SliderView(APIView):
 
     def get(self, request):
         slider_list = Sliders.objects.all().order_by('type_slider')
-        serialzer = SliderSerializer(slider_list, many=True)
+        serialzer = SliderSerializer(slider_list, context={"request": request}, many=True)
         return Response(serialzer.data)
