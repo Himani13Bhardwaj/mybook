@@ -121,13 +121,23 @@ WSGI_APPLICATION = 'bookhunt.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'd1d7rrm2fqbi1m',
+        'USER': 'gcdbbgjzodwmey',
+        'PASSWORD': '03024b3631b8c4d2d03ae5fe21d702094a46edddb4977994c95c6530122cab4a',
+        'HOST': 'ec2-54-170-100-209.eu-west-1.compute.amazonaws.com',
+        'PORT': '5432',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
