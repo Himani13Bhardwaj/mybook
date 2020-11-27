@@ -10,6 +10,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from author.models import Author
 from author.api.serializers import AuthorSerializer, AuthorProfileSerializer
+from tools.pagination import StandardResultsSetPagination
 
 # Create your views here.
 # Author
@@ -18,7 +19,14 @@ from author.api.serializers import AuthorSerializer, AuthorProfileSerializer
 class AuthorView(ListAPIView):
     queryset = Author.objects.all().order_by('id')
     serializer_class = AuthorSerializer
-    pagination_class = LimitOffsetPagination
+    pagination_class = StandardResultsSetPagination
+
+    def get(self, request, *args, **kwargs):
+        StandardResultsSetPagination.page_size=10
+        serializer = AuthorSerializer(Author.objects.all().order_by('id'), many=True)
+        page = self.paginate_queryset(serializer.data)
+        return self.get_paginated_response(page)
+
 
 class AuthorProfileView(APIView):
     # def get(self, request):
