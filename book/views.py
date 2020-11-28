@@ -149,7 +149,7 @@ class BookReadView(APIView):
                     if not BookReadView.searchBookInUserCollection(self, request.user, bookid):
                         book = Books.objects.get(id=bookid)
                         UserCollection.objects.get_or_create(user=request.user, book_id=book)
-                    chapter = ChapterSerializer(_chapter).data
+                    chapter = ChapterSerializer(_chapter, context={"request": request}).data
                     if BookReadView.searchBookInUserActivity(self, request.user, bookid, chapter_no) is not None:
                         return Response({'message': 'Successfully Opened.','login': True, 'unlock': True,'chapter':chapter })
                     if chapter['state'] == 'free':
@@ -271,9 +271,9 @@ class LatestView(APIView):
     def get(self, request):
         data = dict()
         try:
-            data['latest'] = BooksSerializer(Books.objects.order_by('published_time')[:5], many=True).data
+            data['latest'] = BooksSerializer(Books.objects.order_by('published_time')[:5], context={"request": request}, many=True).data
             try:
-                data['deals'] = BooksSerializer(Books.objects.order_by('ranking')[:5], many=True).data
+                data['deals'] = BooksSerializer(Books.objects.order_by('ranking')[:5], context={"request": request}, many=True).data
             except Exception:
                 data['deals'] = []
         except Exception:
