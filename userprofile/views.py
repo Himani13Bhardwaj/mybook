@@ -22,10 +22,10 @@ class UserProfileView(APIView):
     authentication_classes = (TokenAuthentication,)
 
     def get(self, request):
-        user_activity_list = UserProfile.objects.filter(id=request.user.id)
+        user_activity_list = UserProfile.objects.get(id=request.user.id)
         data = {}
         print(request.user, type(request.user))
-        serialzer = UserProfileSerializer(user_activity_list, many=True)
+        serialzer = UserProfileSerializer(user_activity_list)
         data['userprofile'] = serialzer.data
         data['user'] = AccountPropertiesSerializer(
             request.user

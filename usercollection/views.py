@@ -23,20 +23,23 @@ class UserCollectionView(APIView):
     authentication_classes = (TokenAuthentication,)
 
     def get(self, request):
-        user_collection_list = UserCollection.objects.all()
-        serialzer = UserCollectionSerializer(user_collection_list, many=True)
-        return Response(serialzer.data)
-
-    # def post(self, request):
-    #     serialzer = UserCollectionSerializer(data=request.data)
-    #     if serialzer.is_valid():
-    #         serialzer.save()
-    #         return JsonResponse(serialzer.data, status = status.HTTP_201_CREATED)
-    #     return JsonResponse(serialzer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            booksid = UserCollection.objects.filter(user__id=request.user.id).values_list('book_id', flat=True)    
+        except UserCollection.DoesNotExist:
+            booksid = []
+        books = Books.objects.filter(id__in=booksid)
+        class apibookserializer(BooksSerializer):
+            author = serializers.CharField(source='author.author_name')
+            genre = serializers.CharField(source='genre.genre_name')
+        apibookserializer.Meta.fields.extend(['author', 'genre', 'ranking'])
+        data = apibookserializer(books, context={"request": request}, many=True).data 
+        return Response(data)
+    
 
     def post(self, request):
-        userid = request.data.get('userid')
-        useremail = request.data.get('useremail')
+        userid = request.user.id
+        useremail = request.user.email
+        print(userid, useremail)
         try:
             booksid = UserCollection.objects.filter(user__id=userid).values_list('book_id', flat=True)    
         except UserCollection.DoesNotExist:
@@ -46,5 +49,5 @@ class UserCollectionView(APIView):
             author = serializers.CharField(source='author.author_name')
             genre = serializers.CharField(source='genre.genre_name')
         apibookserializer.Meta.fields.extend(['author', 'genre', 'ranking'])
-        data = apibookserializer(books, many=True).data
+        data = apibookserializer(books, context={"request": request}, many=True).data
         return Response(data)
