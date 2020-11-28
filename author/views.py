@@ -23,7 +23,7 @@ class AuthorView(ListAPIView):
 
     def get(self, request, *args, **kwargs):
         StandardResultsSetPagination.page_size=10
-        serializer = AuthorSerializer(Author.objects.all().order_by('id'), many=True)
+        serializer = AuthorSerializer(Author.objects.all().order_by('id'), context={"request": request}, many=True)
         page = self.paginate_queryset(serializer.data)
         return self.get_paginated_response(page)
 
