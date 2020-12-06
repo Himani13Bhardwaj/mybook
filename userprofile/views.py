@@ -22,15 +22,18 @@ class UserProfileView(APIView):
     authentication_classes = (TokenAuthentication,)
 
     def get(self, request):
-        user_activity_list = UserProfile.objects.get(id=request.user.id)
-        data = {}
-        print(request.user, type(request.user))
-        serialzer = UserProfileSerializer(user_activity_list)
-        data['userprofile'] = serialzer.data
-        data['user'] = AccountPropertiesSerializer(
-            request.user
-            ).data
-        return Response(data)
+        try:
+            user_activity_list = UserProfile.objects.get(user_id=request.user.id)
+            data = {}
+            print(request.user, type(request.user))
+            serialzer = UserProfileSerializer(user_activity_list)
+            data['userprofile'] = serialzer.data
+            data['user'] = AccountPropertiesSerializer(
+                request.user
+                ).data
+            return Response(data)
+        except UserProfile.DoesNotExist:
+            return Response({'message': 'User profile is not created. Kindly login first'})
 
     def post(self, request):
         serialzer = UserProfileSerializer(data=request.data)
