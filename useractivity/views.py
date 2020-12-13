@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from useractivity.models import UserActivity
+from useractivity.models import UserActivity, UserFeedback
 from useractivity.api.serializers import UserActivitySerializer
 
 # Create your views here.
@@ -31,3 +31,16 @@ class UserActivityView(APIView):
             serialzer.save()
             return JsonResponse(serialzer.data, status = status.HTTP_201_CREATED)
         return JsonResponse(serialzer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FeedbackView(APIView):
+
+    def post(self, request):
+        email = request.data.get('email')
+        comment = request.data.get('comment')
+        UserFeedback.objects.create(email=email, comment=comment)
+        return Response({"email": email, 
+            "feedback": comment, 
+            "message": "Thanks your feedback recorded"})
+        
+

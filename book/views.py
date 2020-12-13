@@ -262,12 +262,12 @@ def search(request):
     bookname = request.data.get('bookname')
     authorname = request.data.get('authorname')
     if bookname:
-        data = BooksSerializer(Books.objects.filter(book_name__icontains = bookname), many=True).data
+        data = BooksSerializer(Books.objects.filter(book_name__icontains = bookname), context={"request": request}, many=True).data
     elif authorname:
         authors = Author.objects.filter(author_name__icontains = authorname).values_list('id', flat=True)
         for item in authors: print(item)
         BooksSerializer.Meta.fields.extend(['author', 'ranking'])
-        data = BooksSerializer(Books.objects.filter(author__id__in = authors), many=True).data
+        data = BooksSerializer(Books.objects.filter(author__id__in = authors), many=True, context={"request": request}).data
         print(authors)
     return Response(data)
 
