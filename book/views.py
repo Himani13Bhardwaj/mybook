@@ -29,6 +29,7 @@ from usercollection.models import UserCollection
 from useractivity.models import UserActivity
 from userprofile.models import UserProfile
 from userprofile.api.serializers import UserProfileSerializer
+from comment.api.serializers import CommentsSerializer
 # Create your views here.
 # Books Detials
 # -----------------------------------------------
@@ -85,10 +86,14 @@ class BookInfoView(APIView):
     def post(self, request):
         books = Books.objects.filter(id=request.data.get('bookid'),
                                 book_name=request.data.get('bookname'))
+        class CommentSerializer(CommentsSerializer):
+            email = serializers.CharField(source = 'user_id.email')
+            username = serializers.CharField(source = 'user_id.username')
         class BookSerializer(BooksSerializer):
             upvote = serializers.CharField(source='book_details.upvote')
             downvote = serializers.CharField(source='book_details.downvote')
-            comments = serializers.StringRelatedField(many=True)
+            # comments = serializers.StringRelatedField(many=True)
+            comments = CommentSerializer(many=True, read_only=True)
             author = serializers.CharField(source='author.author_name')
         BookSerializer.Meta.fields = ['id', 'chapters', 'book_name', 'book_cover_url', 'view', 'upvote', 'downvote', 'book_brief_info', 'genre', 'author', 'ranking', 'comments']
         data = BookSerializer(books, many=True, context={"request": request}).data
