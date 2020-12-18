@@ -193,10 +193,13 @@ def upvote(request):
     bookdetail.upvote = upvote_count
     bookdetail.save()
     book = Books.objects.get(book_name=bookname, id=bookid)
+    class CommentSerializer(CommentsSerializer):
+            email = serializers.CharField(source = 'user_id.email')
+            username = serializers.CharField(source = 'user_id.username')
     class BookSerializer(BooksSerializer):
             upvote = serializers.CharField(source='book_details.upvote')
             downvote = serializers.CharField(source='book_details.downvote')
-            comments = serializers.StringRelatedField(many=True)
+            comments = CommentSerializer(many=True, read_only=True)
             author = serializers.CharField(source='author.author_name')
     BookSerializer.Meta.fields = ['id', 'book_name', 'book_cover_url', 'view', 'upvote', 'downvote', 'book_brief_info', 'genre', 'author', 'ranking', 'comments']
     data = BookSerializer(book).data
@@ -222,10 +225,13 @@ def downvote(request):
     bookdetail.downvote = downvote_count
     bookdetail.save()
     book = Books.objects.get(book_name=bookname, id=bookid)
+    class CommentSerializer(CommentsSerializer):
+            email = serializers.CharField(source = 'user_id.email')
+            username = serializers.CharField(source = 'user_id.username')
     class BookSerializer(BooksSerializer):
             upvote = serializers.CharField(source='book_details.upvote')
             downvote = serializers.CharField(source='book_details.downvote')
-            comments = serializers.StringRelatedField(many=True)
+            comments = serializers.CommentSerializer(many=True)
             author = serializers.CharField(source='author.author_name')
     BookSerializer.Meta.fields = ['id', 'book_name', 'book_cover_url', 'view', 'upvote', 'downvote', 'book_brief_info', 'genre', 'author', 'ranking', 'comments']
     data = BookSerializer(book).data
