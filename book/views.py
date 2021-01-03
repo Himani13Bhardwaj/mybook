@@ -253,10 +253,13 @@ def comment(request):
     except Books.DoesNotExist:
         return Response('no book exists')
     Comments.objects.create(book_id=book, user_id=request.user, comment=comment)
+    class CommentSerializer(CommentsSerializer):
+            email = serializers.CharField(source = 'user_id.email')
+            username = serializers.CharField(source = 'user_id.username')
     class BookSerializer(BooksSerializer):
             upvote = serializers.CharField(source='book_details.upvote')
             downvote = serializers.CharField(source='book_details.downvote')
-            comments = serializers.StringRelatedField(many=True)
+            comments = CommentSerializer(many=True)
             author = serializers.CharField(source='author.author_name')
     BookSerializer.Meta.fields = ['id', 'book_name', 'book_cover_url', 'view', 'upvote', 'downvote', 'book_brief_info', 'genre', 'author', 'ranking', 'comments']
     data = BookSerializer(book).data
