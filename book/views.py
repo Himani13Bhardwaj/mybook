@@ -58,7 +58,7 @@ class BookDetailsView(RetrieveAPIView):
 class BooksView(APIView):
 
     pagination_class = StandardResultsSetPagination
-    filterset_fields = ['genre']
+    filterset_fields = ['genre', 'language', 'author', 'ranking', 'view', 'published_time', 'book_name']
     filter_backends = [DjangoFilterBackend]
 
     def get(self, request):
@@ -67,8 +67,7 @@ class BooksView(APIView):
             for backend in list(self.filter_backends):
                 queryset = backend().filter_queryset(self.request, queryset, self)
             return queryset
-
-        paginator = Paginator(filter_queryset(Books.objects.filter()), 20)
+        paginator = Paginator(filter_queryset(Books.objects.all()), 20)
         page = request.query_params.get('page')
         try:
             books = paginator.page(page)
