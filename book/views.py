@@ -30,6 +30,7 @@ from useractivity.models import UserActivity
 from userprofile.models import UserProfile
 from userprofile.api.serializers import UserProfileSerializer
 from comment.api.serializers import CommentsSerializer
+from tools.customserializers import BookLatestSerializer
 # Create your views here.
 # Books Detials
 # -----------------------------------------------
@@ -270,27 +271,20 @@ def search(request):
     bookname = request.data.get('bookname')
     authorname = request.data.get('authorname')
     if bookname:
-        data = BooksSerializer(Books.objects.filter(book_name__icontains = bookname), context={"request": request}, many=True).data
+        data = BookLatestSerializer(Books.objects.filter(book_name__icontains = bookname), context={"request": request}, many=True).data
     elif authorname:
         authors = Author.objects.filter(author_name__icontains = authorname).values_list('id', flat=True)
         for item in authors: print(item)
         BooksSerializer.Meta.fields.extend(['author', 'ranking'])
-        data = BooksSerializer(Books.objects.filter(author__id__in = authors), many=True, context={"request": request}).data
-        print(authors)
+        data = BooksLatestSerializer(Books.objects.filter(author__id__in = authors), many=True, context={"request": request}).data
     return Response(data)
 
 # get the latest books deal
 class LatestView(APIView):
     def get(self, request):
         data = dict()
-        try:
-            data['latest'] = BooksSerializer(Books.objects.order_by('published_time')[:5], context={"request": request}, many=True).data
-            try:
-                data['deals'] = BooksSerializer(Books.objects.order_by('ranking')[:5], context={"request": request}, many=True).data
-            except Exception:
-                data['deals'] = []
-        except Exception:
-            data['latest'] = []
+        data['latest'] = BookLatestSerializer(Books.objects.all().order_by('published_time')[:5], context={"request": request}, many=True).data
+        data['deals'] = BookLatestSerializer(Books.objects.all().order_by('ranking')[:5], context={"request": request}, many=True).data
         return Response(data)
   
 # unlock the locked chapter
