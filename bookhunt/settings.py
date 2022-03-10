@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 from pathlib import Path
 import os
 import django_heroku
+import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
@@ -128,17 +129,18 @@ WSGI_APPLICATION = 'bookhunt.wsgi.application'
 #     }
 # }
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'd1d7rrm2fqbi1m',
-        'USER': 'gcdbbgjzodwmey',
-        'PASSWORD': '03024b3631b8c4d2d03ae5fe21d702094a46edddb4977994c95c6530122cab4a',
-        'HOST': 'ec2-54-170-100-209.eu-west-1.compute.amazonaws.com',
-        'PORT': '5432',
-    }
-}
-
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'd1d7rrm2fqbi1m',
+#         'USER': 'gcdbbgjzodwmey',
+#         'PASSWORD': '03024b3631b8c4d2d03ae5fe21d702094a46edddb4977994c95c6530122cab4a',
+#         'HOST': 'ec2-54-170-100-209.eu-west-1.compute.amazonaws.com',
+#         'PORT': '5432',
+#     }
+# }
+db_database = dj_database_url.config(conn_max_age=600)
+DATABASES['default'].update(db_database)
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
